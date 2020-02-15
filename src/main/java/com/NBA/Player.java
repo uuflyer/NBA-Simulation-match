@@ -10,13 +10,16 @@ public class Player {
     private int height;
     private int dunkRate;
     private int chooseRate;
+    private int reboundValue;
 
+    private int rebounds = 0;
     private int score = 0;
+
 
     private int choose2Or3Rate;
     private int defensiveValue;
 
-    public Player(String name, String position, int twoShotInRate, int threeShotInRate, int height, int dunkRate, int chooseRate, int choose2Or3Rate, int defensiveValue) {
+    public Player(String name, String position, int twoShotInRate, int threeShotInRate, int height, int dunkRate, int chooseRate, int choose2Or3Rate, int defensiveValue, int reboundValue) {
         this.name = name;
         this.position = position;
         this.twoShotInRate = twoShotInRate;
@@ -26,6 +29,7 @@ public class Player {
         this.chooseRate = chooseRate;
         this.choose2Or3Rate = choose2Or3Rate;
         this.defensiveValue = defensiveValue;
+        this.reboundValue = reboundValue;
     }
 
     public int shoot() {
@@ -65,6 +69,7 @@ public class Player {
         return 0;
     }
 
+
     private boolean shotInOrNot(int shotInRate) {
         int shotInRateNumber = new Random().nextInt(100);
         return shotInRateNumber < shotInRate && shotInRateNumber > 0;
@@ -100,6 +105,18 @@ public class Player {
 
     public int getThreeShotInRate() {
         return threeShotInRate;
+    }
+
+    public int getReboundValue() {
+        return reboundValue;
+    }
+
+    public int getRebounds() {
+        return rebounds;
+    }
+
+    public void setRebounds(int rebounds) {
+        this.rebounds = rebounds;
     }
 
     public int getDefensiveValue() {

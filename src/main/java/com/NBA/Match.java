@@ -7,6 +7,7 @@ public class Match {
     private static redTeam team2 = new redTeam();
     private static int matchTime = 2880; //比赛时间
     private static double defenseFactor = 0.15;  //防守因子，用防守者的防守值乘以该因子，让被防守者的命中率下降这个值的大小
+    private static int reboundsFactor = 8;
 
     public static void main(String[] args) {
         System.out.println("下面请看 " + team1.getTeamName() + " VS " + team2.getTeamName() + " 带来的比赛");
@@ -55,6 +56,15 @@ public class Match {
                 System.out.println("激烈的比赛结束了！！  两队得分情况:");
                 printResult(team1);
                 printResult(team2);
+
+                if (team1.getTotalScore() > team2.getTotalScore()) {
+                    System.out.println("");
+                    System.out.println("恭喜 " + team1.getTeamName() + " 喜提胜利");
+                } else {
+
+                    System.out.println("恭喜 " + team2.getTeamName() + " 喜提胜利");
+                    System.out.println("");
+                }
                 matchTime = 0;
             }
         }
@@ -74,7 +84,7 @@ public class Match {
         int normalShoot2 = attackingPlayer.getTwoShotInRate();
         int normalShoot3 = attackingPlayer.getThreeShotInRate();
 
-        effectAttackAndShoot(attackTeam, attackingPlayer, defensiveValue, normalShoot2); //用防守方的防守值去影响进攻者的投篮属性
+        effectAttackAndShoot(attackTeam, defenceTeam, attackingPlayer, defensiveValue, normalShoot2); //用防守方的防守值去影响进攻者的投篮属性
 
         restoreTheShootRate(attackingPlayer, normalShoot2, normalShoot3); //还原进攻者的正常投篮属性
 
@@ -85,15 +95,45 @@ public class Match {
         attackingPlayer.setThreeShotInRate(normalShoot3);
     }
 
-    private static void effectAttackAndShoot(Team attackTeam, Player attackingPlayer, int defensiveValue, int normalShoot2) {
+    private static void effectAttackAndShoot(Team attackTeam, Team defenceTeam, Player attackingPlayer, int defensiveValue, int normalShoot2) {
         //通过防守者防守属性 重新计算进攻者的命中率
         attackingPlayer.setThreeShotInRate((int) (normalShoot2 - (defensiveValue * defenseFactor)));
         attackingPlayer.setTwoShotInRate((int) (normalShoot2 - (defensiveValue * defenseFactor)));
 
         //将每次进攻的得分统计
         int totalScore = attackTeam.getTotalScore();
-        totalScore += attackingPlayer.shoot();
+        int currentSocre = attackingPlayer.shoot();
+        totalScore += currentSocre;
         attackTeam.setTotalScore(totalScore);
+        if (currentSocre == 0) {
+            rebound(attackTeam, defenceTeam);
+        }
+    }
+
+    private static void rebound(Team attackTeam, Team defenceTeam) {
+        int reboundNumber = new Random().nextInt(10);
+        if (reboundNumber < reboundsFactor) {
+            Player getReboundsPlayer = getReboundsPlayerAndCountRebounds(defenceTeam);
+
+            System.out.println("");
+            System.out.println(getReboundsPlayer.getName() + " 奋力保护好后场篮板，运球过半场");
+        } else {
+            Player getReboundsPlayer = getReboundsPlayerAndCountRebounds(attackTeam);
+            System.out.println(getReboundsPlayer.getName() + " 拼命抢下前场板!! 正在有序的组织进攻!");
+            attackTeam.isAttacked = false;
+        }
+
+    }
+
+    private static Player getReboundsPlayerAndCountRebounds(Team defenceTeam) {
+        Player getReboundsPlayer = defenceTeam.choosePlayerRebounds();
+        int playerRebounds = getReboundsPlayer.getRebounds();
+        playerRebounds++;
+        int teamRebounds = defenceTeam.getTotalReboundsNumber();
+        teamRebounds++;
+        getReboundsPlayer.setRebounds(playerRebounds);
+        defenceTeam.setTotalReboundsNumber(teamRebounds);
+        return getReboundsPlayer;
     }
 
     private static int judgeThePosition(String position, Team defenceTeam) {
@@ -114,11 +154,14 @@ public class Match {
 
     private static void printResult(Team team) {
         System.out.println(team.getTeamName() + "队");
-        System.out.println(team.getPG().getName() + " : " + team.getPG().getScore() + "分");
-        System.out.println(team.getSG().getName() + " : " + team.getSG().getScore() + "分");
-        System.out.println(team.getSF().getName() + " : " + team.getSF().getScore() + "分");
-        System.out.println(team.getPF().getName() + " : " + team.getPF().getScore() + "分");
-        System.out.println(team.getC().getName() + " : " + team.getC().getScore() + "分");
+        System.out.println(team.getPG().getName() + " : " + team.getPG().getScore() + "分 " + team.getPG().getRebounds() + "篮板");
+        System.out.println(team.getSG().getName() + " : " + team.getSG().getScore() + "分 " + team.getSG().getRebounds() + "篮板");
+        System.out.println(team.getSF().getName() + " : " + team.getSF().getScore() + "分 " + team.getSF().getRebounds() + "篮板");
+        System.out.println(team.getPF().getName() + " : " + team.getPF().getScore() + "分 " + team.getPF().getRebounds() + "篮板");
+        System.out.println(team.getC().getName() + " : " + team.getC().getScore() + "分 " + team.getC().getRebounds() + "篮板");
+        System.out.println("");
+
+
     }
 
 
