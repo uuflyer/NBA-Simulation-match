@@ -1,5 +1,7 @@
 package main.java.com.NBA;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Match {
@@ -8,6 +10,7 @@ public class Match {
     private static int matchTime = 2880; //比赛时间
     private static double defenseFactor = 0.15;  //防守因子，用防守者的防守值乘以该因子，让被防守者的命中率下降这个值的大小
     private static int reboundsFactor = 8;
+    private static int OTtimes = 1;
 
     public static void main(String[] args) {
         System.out.println("下面请看 " + team1.getTeamName() + " VS " + team2.getTeamName() + " 带来的比赛");
@@ -35,22 +38,29 @@ public class Match {
                 team1.isAttacked = true;
                 System.out.println("");
             }
-            if (matchTime < 0) {
+            if (matchTime <= 0) {
                 matchTime = 1;
             }
             System.out.println("现在双方比分：" + team1.getTeamName() + " " + team1.getTotalScore() + " VS " + team2.getTeamName() + " " + team2.getTotalScore());
             System.out.println("");
 
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
 
             if (matchTime == 1) {
                 if (team1.getTotalScore() == team2.getTotalScore()) {
-                    System.out.println("激烈的常规时间结束！！  两队现在进入加时状态");
+                    if (OTtimes == 1) {
+                        System.out.println("激烈的常规时间结束！！  两队现在进入第 " + OTtimes + " 个加时状态");
+                    } else {
+                        System.out.println("比分你追我赶，即将进入到第 " + OTtimes + " 个加时时间");
+                        System.out.println("双方都显得有些疲惫!!   又得再一次进入加时时间!");
+                        System.out.println("这种时候更是考验球员的耐力!!   ");
+                    }
                     matchTime = 300;  //加时时间
+                    OTtimes++;
                     continue;
                 }
                 System.out.println("激烈的比赛结束了！！  两队得分情况:");
@@ -102,37 +112,62 @@ public class Match {
 
         //将每次进攻的得分统计
         int totalScore = attackTeam.getTotalScore();
-        int currentSocre = attackingPlayer.shoot();
-        totalScore += currentSocre;
+        int currentScore = attackingPlayer.shoot();
+
+        countShootInRate(attackingPlayer, currentScore);
+
+        totalScore += currentScore;
         attackTeam.setTotalScore(totalScore);
-        if (currentSocre == 0) {
+
+        if (currentScore == 0) {
             rebound(attackTeam, defenceTeam);
+        }
+    }
+
+    private static void countShootInRate(Player attackingPlayer, int currentScore) {
+        if (currentScore != 0) {
+            if (currentScore == 2) {
+                int currentTimes = attackingPlayer.getShootIn2Times();
+                currentTimes++;
+                attackingPlayer.setShootIn2Times(currentTimes);
+            } else {
+                int currentShootIn3Times = attackingPlayer.getShootIn3Times();
+                currentShootIn3Times++;
+                attackingPlayer.setShootIn3Times(currentShootIn3Times);
+            }
         }
     }
 
     private static void rebound(Team attackTeam, Team defenceTeam) {
         int reboundNumber = new Random().nextInt(10);
-        if (reboundNumber < reboundsFactor) {
+        if (reboundNumber < reboundsFactor) {   //2  8规则！ 这是防守方拿下篮板的概率和情况
             Player getReboundsPlayer = getReboundsPlayerAndCountRebounds(defenceTeam);
 
+            //防守方拿下篮板就进行攻防转换
             System.out.println("");
             System.out.println(getReboundsPlayer.getName() + " 奋力保护好后场篮板，运球过半场");
         } else {
+            //如果被进攻方拿下篮板，那就嘿嘿嘿!!!
+            //再次组织进攻，并修改球队进攻过的标志为false
+
             Player getReboundsPlayer = getReboundsPlayerAndCountRebounds(attackTeam);
+            int currentFrontcourtRbounds = getReboundsPlayer.getFrontcourtRbounds();
+            currentFrontcourtRbounds++;
+            getReboundsPlayer.setFrontcourtRbounds(currentFrontcourtRbounds);
             System.out.println(getReboundsPlayer.getName() + " 拼命抢下前场板!! 正在有序的组织进攻!");
             attackTeam.isAttacked = false;
         }
 
     }
 
-    private static Player getReboundsPlayerAndCountRebounds(Team defenceTeam) {
-        Player getReboundsPlayer = defenceTeam.choosePlayerRebounds();
+    private static Player getReboundsPlayerAndCountRebounds(Team getReboundsTeam) {
+        Player getReboundsPlayer = getReboundsTeam.choosePlayerRebounds();  //选一个球员抢下篮板
         int playerRebounds = getReboundsPlayer.getRebounds();
         playerRebounds++;
-        int teamRebounds = defenceTeam.getTotalReboundsNumber();
+        int teamRebounds = getReboundsTeam.getTotalReboundsNumber();
         teamRebounds++;
         getReboundsPlayer.setRebounds(playerRebounds);
-        defenceTeam.setTotalReboundsNumber(teamRebounds);
+        getReboundsTeam.setTotalReboundsNumber(teamRebounds);
         return getReboundsPlayer;
     }
 
@@ -153,17 +188,28 @@ public class Match {
     }
 
     private static void printResult(Team team) {
-        System.out.println(team.getTeamName() + "队");
-        System.out.println(team.getPG().getName() + " : " + team.getPG().getScore() + "分 " + team.getPG().getRebounds() + "篮板");
-        System.out.println(team.getSG().getName() + " : " + team.getSG().getScore() + "分 " + team.getSG().getRebounds() + "篮板");
-        System.out.println(team.getSF().getName() + " : " + team.getSF().getScore() + "分 " + team.getSF().getRebounds() + "篮板");
-        System.out.println(team.getPF().getName() + " : " + team.getPF().getScore() + "分 " + team.getPF().getRebounds() + "篮板");
-        System.out.println(team.getC().getName() + " : " + team.getC().getScore() + "分 " + team.getC().getRebounds() + "篮板");
-        System.out.println("");
+        Player PG = team.getPG();
+        Player SG = team.getSG();
+        Player SF = team.getSF();
+        Player PF = team.getPF();
+        Player C = team.getC();
+        List<Player> teamArry = asList(PG, SG, SF, PF, C);
 
+        System.out.println(team.getTeamName() + "队");
+        for (Player player : teamArry) {
+            System.out.println(player.getName() + " : " + player.getScore() + "分 " + player.getRebounds() + "篮板 " + player.getFrontcourtRbounds() + " 个前场篮板 " + "两分 " + player.getShootIn2Times() + "/" + player.getShoot2Times() + " 三分 " + player.getShootIn3Times() + "/" + player.getShoot3Times());
+        }
+        System.out.println("");
 
     }
 
+    private static List<Player> asList(Player... args) {
+        List<Player> result = new ArrayList<>();
+        for (int i = 0; i < args.length; i++) {
+            result.add(args[i]);
+        }
+        return result;
+    }
 
     private static void chooseFirstTeam() {
         int i = new Random().nextInt(2);

@@ -13,7 +13,13 @@ public class Player {
     private int reboundValue;
 
     private int rebounds = 0;
+    private int frontcourtRbounds = 0;
     private int score = 0;
+    private int shoot3Times = 0;
+    private int shootIn3Times = 0;
+
+    private int shootIn2Times = 0;
+    private int shoot2Times = 0;
 
 
     private int choose2Or3Rate;
@@ -36,11 +42,44 @@ public class Player {
         return choose2Or3Shoot(choose2Or3Rate);
     }
 
+    public int getShoot3Times() {
+        return shoot3Times;
+    }
+
+    public void setShoot3Times(int shoot3Times) {
+        this.shoot3Times = shoot3Times;
+    }
+
+    public int getShootIn3Times() {
+        return shootIn3Times;
+    }
+
+    public void setShootIn3Times(int shootIn3Times) {
+        this.shootIn3Times = shootIn3Times;
+    }
+
+    public int getShootIn2Times() {
+        return shootIn2Times;
+    }
+
+    public void setShootIn2Times(int shootIn2Times) {
+        this.shootIn2Times = shootIn2Times;
+    }
+
+    public int getShoot2Times() {
+        return shoot2Times;
+    }
+
+    public void setShoot2Times(int shoot2Times) {
+        this.shoot2Times = shoot2Times;
+    }
+
     private int choose2Or3Shoot(int choose2Or3Rate) {
         int choose2Or3Number = new Random().nextInt(100);
         int dunckNumber = new Random().nextInt(100);
         if (choose2Or3Number < choose2Or3Rate && choose2Or3Number > 0) {
 
+            shoot2Times++;
             if (dunckNumber < dunkRate) {
                 System.out.println("欧欧欧！！ 快看呐！ " + name + " 高高跃起,重扣一记!");
                 score += 2;
@@ -56,6 +95,7 @@ public class Player {
                 System.out.println(name + " 手感不佳，框都被打歪了");
             }
         } else {
+            shoot3Times++;
             System.out.println(name + " 24英尺外，果断三分出手，有没有");
             if (shotInOrNot(threeShotInRate)) {
                 System.out.println("我的三分剑，是地狱的火焰");
@@ -73,6 +113,14 @@ public class Player {
     private boolean shotInOrNot(int shotInRate) {
         int shotInRateNumber = new Random().nextInt(100);
         return shotInRateNumber < shotInRate && shotInRateNumber > 0;
+    }
+
+    public int getFrontcourtRbounds() {
+        return frontcourtRbounds;
+    }
+
+    public void setFrontcourtRbounds(int frontcourtRbounds) {
+        this.frontcourtRbounds = frontcourtRbounds;
     }
 
     public int getChooseRate() {
